@@ -1,5 +1,6 @@
 var axios = require('axios');
 var Q = require('q');
+const fs = require('fs');
 
 var MIN_CHART_NAME = 2;
 var BOT = {email:"adminbot5@soundcharts.com",password:"eaaa1557187444022aec05f4c09d47df2e627642"}
@@ -9,7 +10,6 @@ query = {NumSpinner: 0}
 
 
 var getChartsList = (_charts) => {
-
 	if (!Array.isArray(_charts))
 		return [];
 	var list = [];
@@ -22,7 +22,6 @@ var getChartsList = (_charts) => {
 
 var queryBase = (_charts) => {
 	var def = Q.defer(), list = [], relevants = [];
-
 	var chartsRequired = _charts.split('-');
 	var required = getChartsList(chartsRequired);
 	//
@@ -32,9 +31,19 @@ var queryBase = (_charts) => {
 	// 	});
 	// 	return def.promise
 	// }
+
+	fs.exists('listCacheArtist', (exists) => {
+	  if (exists) {
+	    fs.open('listCacheArtist', 'a+', (err, fd) => {
+	      readMyData(fd);
+	    });
+	  } else {
+	    console.error('the file list Cache Artist does not exist');
+	  }
+	});
+
 	axios.all(required)
 		.then((_list) => {
-
 			var charts, ids = [], list = [];
 			for (charts in _list) {
 				var artist;
@@ -50,13 +59,15 @@ var queryBase = (_charts) => {
 					}
 				}
 			}
-			console.log(list)
+
+		console.log('  + charts : ',list, 'length : ',list.length)
 		})
 		.catch(function (error) {
 			def.resolve({
-				message: 'Oops!'
+				message: 'Oops!je'
 			})
 		});
+
 	return def.promise;
 }
 
